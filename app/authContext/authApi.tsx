@@ -50,8 +50,10 @@ export const authApi = {
 
       // Store token and user data
       if (result.success && result.data.token) {
-        localStorage.setItem('token', result.data.token);
-        localStorage.setItem('user', JSON.stringify(result.data.user));
+        if (typeof window !== 'undefined' && window.localStorage) {
+          window.localStorage.setItem('token', result.data.token);
+          window.localStorage.setItem('user', JSON.stringify(result.data.user));
+        }
       }
 
       return result;
@@ -79,8 +81,10 @@ export const authApi = {
 
       // Store token and user data
       if (result.success && result.data.token) {
-        localStorage.setItem('token', result.data.token);
-        localStorage.setItem('user', JSON.stringify(result.data.user));
+        if (typeof window !== 'undefined' && window.localStorage) {
+          window.localStorage.setItem('token', result.data.token);
+          window.localStorage.setItem('user', JSON.stringify(result.data.user));
+        }
       }
 
       return result;
@@ -111,19 +115,23 @@ export const authApi = {
 
   // Logout user
   logout: (): void => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
+    if (typeof window !== 'undefined' && window.localStorage) {
+      window.localStorage.removeItem('token');
+      window.localStorage.removeItem('user');
+    }
   },
 
   // Check if user is authenticated
   isAuthenticated: (): boolean => {
-    const token = localStorage.getItem('token');
+    if (typeof window === 'undefined' || !window.localStorage) return false;
+    const token = window.localStorage.getItem('token');
     return !!token;
   },
 
   // Get current user from localStorage
   getCurrentUser: (): User | null => {
-    const userStr = localStorage.getItem('user');
+    if (typeof window === 'undefined' || !window.localStorage) return null;
+    const userStr = window.localStorage.getItem('user');
     if (userStr) {
       try {
         return JSON.parse(userStr);
@@ -136,7 +144,8 @@ export const authApi = {
 
   // Get auth token
   getToken: (): string | null => {
-    return localStorage.getItem('token');
+    if (typeof window === 'undefined' || !window.localStorage) return null;
+    return window.localStorage.getItem('token');
   },
 };
 
