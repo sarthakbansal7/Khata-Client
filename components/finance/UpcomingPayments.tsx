@@ -24,7 +24,7 @@ const UpcomingPayments = () => {
               </div>
             </div>
             <div className="text-sm font-semibold text-gray-900">
-              ${payment.amount}
+              ₹{payment.amount.toLocaleString('en-IN')}
             </div>
           </div>
         ))}

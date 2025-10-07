@@ -150,7 +150,7 @@ export default function PayRevealSection() {
             <div className="flex justify-start">
               {isInView && (
                 <RevealText 
-                  text="PAY"
+                  text="TRACK"
                   textColor="text-gray-900"
                   overlayColor="text-sky-500"
                   fontSize="text-4xl md:text-6xl lg:text-8xl"
@@ -164,7 +164,7 @@ export default function PayRevealSection() {
             <div className="flex justify-start">
               {isInView && (
                 <RevealText 
-                  text="ANYONE"
+                  text="EVERY"
                   textColor="text-gray-900"
                   overlayColor="text-sky-500"
                   fontSize="text-4xl md:text-6xl lg:text-8xl"
@@ -175,10 +175,23 @@ export default function PayRevealSection() {
                 />
               )}
             </div>
-            <AnywhereRevealText shouldAnimate={isInView} />
+            <div className="flex justify-start">
+              {isInView && (
+                <RevealText 
+                  text="RUPEE"
+                  textColor="text-gray-900"
+                  overlayColor="text-sky-500"
+                  fontSize="text-4xl md:text-6xl lg:text-8xl"
+                  letterDelay={0.12}
+                  overlayDelay={0.05}
+                  overlayDuration={0.4}
+                  springDuration={600}
+                />
+              )}
+            </div>
             
             <p className="mt-12 text-xl text-gray-600 max-w-2xl">
-              Experience seamless Web3 payments across multiple networks with our cutting-edge platform
+              Take complete control of your finances with intelligent expense tracking, budget management, and AI-powered insights to optimize your financial health.
             </p>
           </div>
 
@@ -200,8 +213,8 @@ export default function PayRevealSection() {
                 {/* Main Payment Image */}
                 <div className="relative rounded-3xl overflow-hidden shadow-2xl bg-gradient-to-br from-cyan-50 to-blue-100">
                   <img
-                    src="https://images.unsplash.com/photo-1563013544-824ae1b704d3?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
-                    alt="Digital Payment Illustration"
+                    src="https://images.unsplash.com/photo-1554224155-6726b3ff858f?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
+                    alt="Financial Dashboard Illustration"
                     className="w-full h-[400px] object-cover"
                   />
                   
@@ -219,8 +232,8 @@ export default function PayRevealSection() {
                         </svg>
                       </div>
                       <div>
-                        <div className="text-sm font-semibold text-gray-800">Instant Transfer</div>
-                        <div className="text-xs text-gray-500">2,500,000</div>
+                        <div className="text-sm font-semibold text-gray-800">Monthly Budget</div>
+                        <div className="text-xs text-gray-500">₹25,000</div>
                       </div>
                     </div>
                   </motion.div>
@@ -236,7 +249,7 @@ export default function PayRevealSection() {
                       <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
                         <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd"/>
                       </svg>
-                      <span className="text-sm font-medium">Payment Sent!</span>
+                      <span className="text-sm font-medium">Budget On Track!</span>
                     </div>
                   </motion.div>
 
@@ -248,7 +261,7 @@ export default function PayRevealSection() {
                     className="absolute bottom-8 left-8 right-8 bg-white/95 backdrop-blur-sm rounded-2xl p-4 shadow-lg border border-white/50"
                   >
                     <div className="flex items-center justify-between mb-3">
-                      <span className="text-sm font-medium text-gray-700">Quick Pay</span>
+                      <span className="text-sm font-medium text-gray-700">Categories</span>
                       <div className="flex gap-1">
                         <div className="w-2 h-2 bg-cyan-400 rounded-full"></div>
                         <div className="w-2 h-2 bg-blue-400 rounded-full"></div>
@@ -257,13 +270,13 @@ export default function PayRevealSection() {
                     </div>
                     <div className="grid grid-cols-3 gap-2">
                       <div className="bg-gradient-to-r from-cyan-100 to-blue-100 rounded-lg p-2 text-center">
-                        <div className="text-xs font-medium text-gray-700">SOL</div>
+                        <div className="text-xs font-medium text-gray-700">Food</div>
                       </div>
                       <div className="bg-gradient-to-r from-green-100 to-emerald-100 rounded-lg p-2 text-center">
-                        <div className="text-xs font-medium text-gray-700">USD</div>
+                        <div className="text-xs font-medium text-gray-700">Travel</div>
                       </div>
                       <div className="bg-gradient-to-r from-blue-100 to-purple-100 rounded-lg p-2 text-center">
-                        <div className="text-xs font-medium text-gray-700">ETH</div>
+                        <div className="text-xs font-medium text-gray-700">Bills</div>
                       </div>
                     </div>
                   </motion.div>

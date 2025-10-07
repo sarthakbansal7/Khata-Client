@@ -42,14 +42,14 @@ export default function Footer() {
   }
 
   const services = [
-    { name: "Bulk Airdrops", href: "#airdrops", icon: DollarSign },
-    { name: "Payroll Solutions", href: "#payroll", icon: Users },
-    { name: "Token Vesting", href: "#vesting", icon: Clock },
-    { name: "Subscriptions", href: "#subscriptions", icon: Zap },
+    { name: "Expense Tracking", href: "#tracking", icon: DollarSign },
+    { name: "Budget Management", href: "#budgeting", icon: Users },
+    { name: "AI Insights", href: "#ai", icon: Clock },
+    { name: "Financial Reports", href: "#reports", icon: Zap },
   ]
 
   const company = [
-    { name: "About PayZoll", href: "#about" },
+    { name: "About KHATA", href: "#about" },
     { name: "Blog & News", href: "#blog" },
     { name: "Careers", href: "#careers" },
     { name: "Contact Us", href: "#contact" },
@@ -97,7 +97,7 @@ export default function Footer() {
                 <div className="w-10 h-10 bg-gradient-to-r from-sky-400 to-blue-600 rounded-xl flex items-center justify-center">
                   <Wallet className="w-6 h-6 text-white" />
                 </div>
-                <span className="text-2xl font-bold text-gray-900">PayZoll</span>
+                <span className="text-2xl font-bold text-gray-900">KHATA</span>
               </div>
               <p className="text-gray-600 mb-6 max-w-md leading-relaxed">
                 The ultimate Web3 payment platform for streaming, distributing, and automating payments directly from your wallet across 14+ networks. Simple, secure, and scalable.
@@ -250,7 +250,7 @@ export default function Footer() {
             className="border-t border-gray-200 pt-8 flex flex-col md:flex-row justify-between items-center"
           >
             <p className="text-gray-500 text-sm mb-4 md:mb-0">
-              © {new Date().getFullYear()} PayZoll. All rights reserved. Built with ❤️ for Web3 payments.
+              © {new Date().getFullYear()} KHATA. All rights reserved. Built with ❤️ for personal finance management.
             </p>
             <div className="flex items-center space-x-4 text-sm text-gray-500">
               <span className="flex items-center space-x-1">

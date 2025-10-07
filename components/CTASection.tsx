@@ -1,5 +1,7 @@
 'use client'
 
+import Link from 'next/link'
+
 export default function CTASection() {
   return (
     <section className="relative py-24 px-4 overflow-hidden">
@@ -8,24 +10,30 @@ export default function CTASection() {
       
       <div className="relative z-10 max-w-5xl mx-auto text-center">
         <h2 className="text-4xl lg:text-6xl font-bold text-white mb-8">
-          Ready to Transform Your
-          <span className="block">Payment Operations?</span>
+          Ready to Take Control of
+          <span className="block">Your Finances?</span>
         </h2>
         <p className="text-xl text-sky-100 mb-12 max-w-3xl mx-auto leading-relaxed">
-          Join thousands of organizations already using VietBuildPay to streamline their Web3 payment workflows. 
-          Start your free trial today.
+          Join thousands of users already using KHATA to master their personal finances. 
+          Start tracking your expenses and building wealth today.
         </p>
         <div className="flex flex-col sm:flex-row gap-6 justify-center items-center">
-          <button className="px-12 py-4 bg-white text-blue-600 rounded-xl font-bold text-lg hover:shadow-2xl transition-all duration-300 hover:scale-105">
-            Start Free Trial
-          </button>
-          <button className="px-12 py-4 border-2 border-white text-white rounded-xl font-bold text-lg hover:bg-white hover:text-blue-600 transition-all duration-300">
-            Schedule Demo
-          </button>
+          <Link 
+            href="/login"
+            className="px-12 py-4 bg-white text-blue-600 rounded-xl font-bold text-lg hover:shadow-2xl transition-all duration-300 hover:scale-105"
+          >
+            Get Started Free
+          </Link>
+          <Link 
+            href="/finance/ai-assistant"
+            className="px-12 py-4 border-2 border-white text-white rounded-xl font-bold text-lg hover:bg-white hover:text-blue-600 transition-all duration-300"
+          >
+            Try AI Assistant
+          </Link>
         </div>
         
         <div className="mt-12 text-sky-100 text-sm">
-          No credit card required • 14-day free trial • Enterprise support included
+          No credit card required • Free forever • AI-powered insights included
         </div>
       </div>
     </section>

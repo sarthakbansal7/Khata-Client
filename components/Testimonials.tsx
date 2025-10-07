@@ -6,83 +6,83 @@ import { Star, Quote } from 'lucide-react';
 const testimonials = [
   {
     id: 1,
-    name: "Sarah Chen",
-    role: "HR Director",
-    company: "TechFlow Inc.",
+    name: "Priya Sharma",
+    role: "Software Engineer",
+    company: "TechCorp",
     image: "https://images.unsplash.com/photo-1494790108755-2616b332c647?w=150&h=150&fit=crop&crop=face",
-    content: "VietBuild-Pay revolutionized our payroll process. The governance integration for our DAO operations is seamless, and the transparent payment system has improved trust across our organization.",
+    content: "KHATA transformed how I manage my finances. The AI insights helped me identify spending patterns I never noticed. I've saved ₹50,000 in just 6 months!",
     rating: 5,
-    category: "payroll"
+    category: "budgeting"
   },
   {
     id: 2,
-    name: "Marcus Rodriguez",
-    role: "Community Manager",
-    company: "CryptoVerse DAO",
+    name: "Rahul Verma",
+    role: "Marketing Manager",
+    company: "Digital Solutions",
     image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop&crop=face",
-    content: "The airdrop distribution system saved us weeks of manual work. We distributed tokens to 10,000+ community members in minutes with their batch processing feature.",
+    content: "The expense tracking is incredibly intuitive. I love how it automatically categorizes my transactions and the monthly reports help me stay on budget effortlessly.",
     rating: 5,
-    category: "airdrop"
+    category: "tracking"
   },
   {
     id: 3,
-    name: "Emily Watson",
-    role: "Finance Lead",
-    company: "BuildDAO",
+    name: "Anita Singh",
+    role: "Financial Analyst",
+    company: "InvestCorp",
     image: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=150&h=150&fit=crop&crop=face",
-    content: "The governance-linked payroll system ensures complete transparency. Every payment is tied to proposals, making our DAO operations truly decentralized and accountable.",
+    content: "The AI financial advisor is like having a personal finance expert in my pocket. It gives actionable advice based on my actual spending data. Absolutely brilliant!",
     rating: 5,
-    category: "dao"
+    category: "ai-advisor"
   },
   {
     id: 4,
-    name: "David Kim",
-    role: "Operations Manager",
-    company: "StartupHub",
+    name: "Vikram Patel",
+    role: "Business Owner",
+    company: "Local Restaurant",
     image: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face",
-    content: "The CSV bulk upload feature is a game-changer. Managing hundreds of employee payments has never been easier. The interface is intuitive and the process is lightning fast.",
+    content: "Managing both personal and business expenses was chaotic until I found KHATA. The multi-currency support and detailed analytics are perfect for my needs.",
     rating: 5,
-    category: "payroll"
+    category: "business"
   },
   {
     id: 5,
-    name: "Lisa Thompson",
-    role: "Blockchain Developer",
-    company: "Web3 Collective",
+    name: "Sneha Reddy",
+    role: "Student",
+    company: "University",
     image: "https://images.unsplash.com/photo-1517841905240-472988babdf9?w=150&h=150&fit=crop&crop=face",
-    content: "Multi-chain support is phenomenal. We run airdrops across Ethereum, BSC, and Polygon seamlessly. The gas optimization features save us thousands in transaction fees.",
+    content: "As a student, budgeting was always stressful. KHATA makes it simple and actually fun! The spending insights help me manage my limited income effectively.",
     rating: 5,
-    category: "airdrop"
+    category: "student"
   },
   {
     id: 6,
-    name: "James Wilson",
-    role: "Treasury Manager",
-    company: "DeFi Guild",
+    name: "Arjun Kumar",
+    role: "Freelancer",
+    company: "Independent",
     image: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&h=150&fit=crop&crop=face",
-    content: "The multi-sig integration with our DAO treasury is flawless. Every payment requires proper governance approval, ensuring complete decentralization and security.",
+    content: "Managing irregular freelance income was a nightmare. KHATA's budgeting tools and expense tracking help me plan for lean months and save during good ones.",
     rating: 5,
-    category: "dao"
+    category: "freelancer"
   },
   {
     id: 7,
-    name: "Anna Martinez",
-    role: "People Operations",
-    company: "RemoteFirst Co.",
+    name: "Meera Iyer",
+    role: "Doctor",
+    company: "City Hospital",
     image: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&h=150&fit=crop&crop=face",
-    content: "Global payroll has never been this simple. The platform handles different currencies and payment methods effortlessly. Our remote team gets paid on time, every time.",
+    content: "With my busy schedule, I had no time for financial planning. KHATA's automated tracking and AI insights keep my finances organized without any effort.",
     rating: 5,
-    category: "payroll"
+    category: "professional"
   },
   {
     id: 8,
-    name: "Roberto Silva",
-    role: "Community Lead",
-    company: "GameFi Alliance",
+    name: "Ravi Gupta",
+    role: "Startup Founder",
+    company: "Tech Startup",
     image: "https://images.unsplash.com/photo-1519085360753-af0119f7cbe7?w=150&h=150&fit=crop&crop=face",
-    content: "The gamification features in their airdrop system increased our community engagement by 300%. Users love the interactive distribution process and real-time tracking.",
+    content: "Running a startup means every rupee counts. KHATA helps me track both personal and business expenses with clarity I never had before. Absolutely essential!",
     rating: 5,
-    category: "airdrop"
+    category: "entrepreneur"
   }
 ];
 
@@ -93,9 +93,9 @@ const TestimonialsSection = () => {
         {/* Section Header */}
         <div className="text-center mb-16">
           <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">
-            Trusted by{' '}
+            Loved by{' '}
             <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-              Industry Leaders
+              Financial Champions
             </span>
           </h2>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto">

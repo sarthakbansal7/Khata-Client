@@ -31,7 +31,7 @@ const Sidebar = () => {
     >
       {/* Logo */}
       <div className="p-4">
-        <div className="w-8 h-8 bg-black rounded-lg flex items-center justify-center">
+        <div className="w-11 h-8 bg-black rounded-lg flex items-center justify-center">
           <span className="text-white font-bold text-sm">Khata</span>
         </div>
       </div>

@@ -21,7 +21,7 @@ const TodoList = () => {
               </div>
             </div>
             <div className="text-sm font-semibold text-gray-900">
-              ${item.amount}
+              ₹{item.amount.toLocaleString('en-IN')}
             </div>
           </div>
         ))}

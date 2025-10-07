@@ -41,7 +41,7 @@ const MostPaidRecipients = () => {
               </div>
               <div className="text-right">
                 <div className="text-sm font-semibold text-gray-900">
-                  ${recipient.totalAmount.toFixed(2)}
+                  ₹{recipient.totalAmount.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                 </div>
                 <div className="text-xs text-gray-500">{recipient.category}</div>
               </div>

@@ -4,16 +4,16 @@ import { useEffect, useRef, useState } from 'react'
 import { Gift, Users, DollarSign, Clock, FileText, CreditCard, QrCode, Calendar, Repeat, Zap } from 'lucide-react'
 
 const services = [
-  { name: 'Airdrops', icon: Gift, description: 'Distribute tokens efficiently to multiple wallets' },
-  { name: 'Payroll', icon: Users, description: 'Automate salary payments in crypto' },
-  { name: 'Grants Distribution', icon: DollarSign, description: 'Manage and distribute funding grants' },
-  { name: 'Token Vesting', icon: Clock, description: 'Set up vesting schedules for token releases' },
-  { name: 'Subscriptions', icon: Repeat, description: 'Recurring crypto subscription payments' },
-  { name: 'Bill Payments', icon: CreditCard, description: 'Pay bills using cryptocurrency' },
-  { name: 'Invoice Links', icon: FileText, description: 'Generate payment links for invoices' },
-  { name: 'Donations', icon: Gift, description: 'Accept crypto donations seamlessly' },
-  { name: 'Payment QR Generator', icon: QrCode, description: 'Create QR codes for instant payments' },
-  { name: 'Event Ticketing', icon: Calendar, description: 'Blockchain-based event tickets' }
+  { name: 'Transaction Tracking', icon: FileText, description: 'Monitor all your income and expenses in real-time' },
+  { name: 'Budget Management', icon: DollarSign, description: 'Set and track budgets with smart insights' },
+  { name: 'Expense Analytics', icon: Zap, description: 'Detailed analysis of your spending patterns' },
+  { name: 'Payment Reminders', icon: Clock, description: 'Never miss important payment deadlines' },
+  { name: 'Financial Reports', icon: FileText, description: 'Generate comprehensive financial reports' },
+  { name: 'Categories & Tags', icon: FileText, description: 'Organize transactions with custom categories' },
+  { name: 'Multi-Currency Support', icon: DollarSign, description: 'Track payments in multiple currencies' },
+  { name: 'AI Financial Advisor', icon: Zap, description: 'Get personalized financial advice from AI' },
+  { name: 'Secure Cloud Sync', icon: FileText, description: 'Your data synced securely across devices' },
+  { name: 'Export & Backup', icon: FileText, description: 'Export data for taxes and accounting' }
 ]
 
 export default function HeroSection() {
@@ -130,16 +130,16 @@ export default function HeroSection() {
               {/* Main Headlines */}
               <div className="space-y-6 mb-12">
                 <h1 className="text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-black leading-none tracking-tight">
-                  Simple.
+                  Smart.
                 </h1>
                 <h1 className="text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-black leading-none tracking-tight">
-                  Safe. Secure.
+                  Financial. Control.
                 </h1>
               </div>
 
               {/* Description */}
               <p className="text-xl md:text-2xl text-white/90 max-w-2xl leading-relaxed font-medium">
-                The ultimate Web3 payment platform for streaming, distributing, and automating payments directly from your wallet across 14+ networks.
+                Take control of your finances with KHATA - the ultimate personal finance management platform. Track expenses, manage budgets, and get AI-powered insights to achieve your financial goals.
               </p>
             </div>
 

@@ -5,21 +5,21 @@ import { Globe, Zap, Shield } from 'lucide-react'
 export default function HowItWorks() {
   const steps = [
     { 
-      title: 'Connect & Configure', 
+      title: 'Track & Organize', 
       icon: Globe, 
-      desc: 'Integrate your existing systems with our API. Set up payment workflows in minutes with our intuitive dashboard.',
+      desc: 'Add your income and expenses effortlessly. Categorize transactions automatically with smart AI recognition.',
       step: '01'
     },
     { 
-      title: 'Automate & Monitor', 
+      title: 'Analyze & Budget', 
       icon: Zap, 
-      desc: 'Deploy smart contracts for automated payments. Real-time monitoring and detailed analytics for complete visibility.',
+      desc: 'Get detailed insights into your spending patterns. Set budgets and receive smart alerts to stay on track.',
       step: '02'
     },
     { 
-      title: 'Scale & Optimize', 
+      title: 'Plan & Grow', 
       icon: Shield, 
-      desc: 'Handle millions of transactions with automatic scaling. Advanced reporting and compliance tools included.',
+      desc: 'Receive personalized financial advice from AI. Plan for future goals and watch your wealth grow.',
       step: '03'
     }
   ]
@@ -29,11 +29,11 @@ export default function HowItWorks() {
       <div className="max-w-7xl mx-auto">
         <div className="text-center mb-20">
           <h2 className="text-4xl lg:text-5xl font-bold text-slate-900 mb-6">
-            Simple. Secure.
-            <span className="bg-gradient-to-r from-sky-600 to-blue-600 bg-clip-text text-transparent"> Scalable.</span>
+            Track. Analyze.
+            <span className="bg-gradient-to-r from-sky-600 to-blue-600 bg-clip-text text-transparent"> Optimize.</span>
           </h2>
           <p className="text-xl text-slate-600 max-w-3xl mx-auto">
-            Get started with enterprise Web3 payments in three simple steps
+            Master your finances with KHATA in three simple steps
           </p>
         </div>
 

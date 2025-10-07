@@ -69,6 +69,7 @@ export default function SettingsPage() {
                       onChange={(e) => setPreferences({...preferences, currency: e.target.value})}
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg"
                     >
+                      <option value="INR">INR (₹)</option>
                       <option value="USD">USD ($)</option>
                       <option value="EUR">EUR (€)</option>
                       <option value="GBP">GBP (£)</option>
