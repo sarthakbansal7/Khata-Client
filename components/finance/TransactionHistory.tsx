@@ -1,23 +1,57 @@
 "use client";
 
 import React from 'react';
-import { transactionData } from '../../lib/mockData';
 import { RotateCcw, ArrowUpDown } from 'lucide-react';
+import { Transaction } from '../../app/authContext/transactionApi';
 
-const TransactionHistory = () => {
-  const getStatusBadge = (status: string) => {
+interface TransactionHistoryProps {
+  transactions: Transaction[];
+  isLoading: boolean;
+}
+
+const TransactionHistory = ({ transactions, isLoading }: TransactionHistoryProps) => {
+  const getStatusBadge = (type: string) => {
     const baseClasses = "px-2 py-1 rounded-full text-xs font-medium";
-    switch (status.toLowerCase()) {
-      case 'success':
+    switch (type.toLowerCase()) {
+      case 'income':
         return `${baseClasses} bg-green-100 text-green-800`;
-      case 'pending':
-        return `${baseClasses} bg-yellow-100 text-yellow-800`;
-      case 'failed':
+      case 'expense':
         return `${baseClasses} bg-red-100 text-red-800`;
       default:
         return `${baseClasses} bg-gray-100 text-gray-800`;
     }
   };
+
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-IN', { 
+      year: 'numeric', 
+      month: 'short', 
+      day: 'numeric' 
+    });
+  };
+
+  if (isLoading) {
+    return (
+      <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 animate-pulse">
+        <div className="flex items-center justify-between mb-6">
+          <div className="h-6 bg-gray-200 rounded w-40"></div>
+          <div className="w-8 h-8 bg-gray-200 rounded-lg"></div>
+        </div>
+        <div className="space-y-4">
+          {[1, 2, 3, 4, 5].map((i) => (
+            <div key={i} className="flex justify-between items-center">
+              <div className="h-4 bg-gray-200 rounded w-20"></div>
+              <div className="h-4 bg-gray-200 rounded w-16"></div>
+              <div className="h-4 bg-gray-200 rounded w-24"></div>
+              <div className="h-4 bg-gray-200 rounded w-16"></div>
+              <div className="h-4 bg-gray-200 rounded w-20"></div>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
@@ -54,7 +88,7 @@ const TransactionHistory = () => {
               </th>
               <th className="text-left py-3 px-4 font-medium text-gray-500 text-sm">
                 <button className="flex items-center hover:text-gray-700">
-                  Status
+                  Type
                   <ArrowUpDown className="ml-1 w-3 h-3" />
                 </button>
               </th>
@@ -67,27 +101,35 @@ const TransactionHistory = () => {
             </tr>
           </thead>
           <tbody>
-            {transactionData.map((transaction, index) => (
-              <tr key={index} className="border-b border-gray-50 hover:bg-gray-50 transition-colors">
-                <td className="py-4 px-4 text-sm text-gray-900 font-medium">
-                  {transaction.id}
-                </td>
-                <td className="py-4 px-4 text-sm text-gray-600">
-                  {transaction.date}
-                </td>
-                <td className="py-4 px-4 text-sm text-gray-600">
-                  {transaction.category}
-                </td>
-                <td className="py-4 px-4">
-                  <span className={getStatusBadge(transaction.status)}>
-                    {transaction.status}
-                  </span>
-                </td>
-                <td className="py-4 px-4 text-sm text-gray-900 font-medium text-right">
-                  ${transaction.amount.toFixed(2)}
+            {transactions.length === 0 ? (
+              <tr>
+                <td colSpan={5} className="py-8 text-center text-gray-500">
+                  No transactions found
                 </td>
               </tr>
-            ))}
+            ) : (
+              transactions.slice(0, 5).map((transaction) => (
+                <tr key={transaction._id || Math.random()} className="border-b border-gray-50 hover:bg-gray-50 transition-colors">
+                  <td className="py-4 px-4 text-sm text-gray-900 font-medium">
+                    {transaction._id ? transaction._id.slice(-6).toUpperCase() : 'N/A'}
+                  </td>
+                  <td className="py-4 px-4 text-sm text-gray-600">
+                    {formatDate(transaction.date)}
+                  </td>
+                  <td className="py-4 px-4 text-sm text-gray-600">
+                    {transaction.category}
+                  </td>
+                  <td className="py-4 px-4">
+                    <span className={getStatusBadge(transaction.type)}>
+                      {transaction.type}
+                    </span>
+                  </td>
+                  <td className="py-4 px-4 text-sm text-gray-900 font-medium text-right">
+                    ₹{transaction.amount.toLocaleString('en-IN')}
+                  </td>
+                </tr>
+              ))
+            )}
           </tbody>
         </table>
       </div>

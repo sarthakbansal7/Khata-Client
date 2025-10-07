@@ -2,17 +2,20 @@
 
 import React, { useState } from 'react';
 import { X, Upload, Download, FileText, Image, AlertCircle } from 'lucide-react';
+import transactionApi, { CreateTransactionRequest } from '@/app/authContext/transactionApi';
 
 interface UploadModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onUpload: (transactions: any[]) => void;
+  onUpload?: () => void; // Callback to refresh transaction list
 }
 
 const UploadModal: React.FC<UploadModalProps> = ({ isOpen, onClose, onUpload }) => {
   const [dragActive, setDragActive] = useState(false);
   const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
   const [activeTab, setActiveTab] = useState<'csv' | 'receipts'>('csv');
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [error, setError] = useState('');
 
   const handleDrag = (e: React.DragEvent) => {
     e.preventDefault();
@@ -43,14 +46,17 @@ const UploadModal: React.FC<UploadModalProps> = ({ isOpen, onClose, onUpload }) 
   };
 
   const downloadTemplate = () => {
-    const csvContent = "date,description,category,type,amount\n2024-01-15,Grocery Shopping,Food & Dining,expense,85.50\n2024-01-14,Salary,Income,income,3000.00\n2024-01-13,Gas Station,Transportation,expense,45.00";
+    const csvContent = "title,amount,type,category,description,date,paymentmethod,recipient\n" +
+      "Grocery Shopping,85.50,expense,Food & Dining,Weekly groceries,2024-01-15,Credit Card,Supermarket\n" +
+      "Salary,3000.00,income,Business,Monthly salary,2024-01-14,Bank Transfer,Company\n" +
+      "Gas Station,45.00,expense,Transportation,Fuel for car,2024-01-13,Debit Card,Gas Station";
     
     const blob = new Blob([csvContent], { type: 'text/csv' });
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.style.display = 'none';
     a.href = url;
-    a.download = 'transaction_template.csv';
+    a.download = 'khata_transaction_template.csv';
     document.body.appendChild(a);
     a.click();
     window.URL.revokeObjectURL(url);
@@ -67,47 +73,44 @@ const UploadModal: React.FC<UploadModalProps> = ({ isOpen, onClose, onUpload }) 
     );
     
     if (csvFiles.length === 0) {
-      alert('Please upload at least one CSV file to process transactions.');
+      setError('Please upload at least one CSV file to process transactions.');
       return;
     }
 
+    setIsProcessing(true);
+    setError('');
+
     try {
-      const allTransactions: any[] = [];
+      const allTransactions: CreateTransactionRequest[] = [];
       
       for (const file of csvFiles) {
         const text = await file.text();
-        const lines = text.split('\n').filter(line => line.trim());
-        
-        // Skip header row
-        const dataLines = lines.slice(1);
-        
-        for (const line of dataLines) {
-          const [date, description, category, type, amount] = line.split(',').map(field => field.trim());
-          
-          if (date && description && category && type && amount) {
-            allTransactions.push({
-              id: Date.now() + Math.random(), // Unique ID
-              date: date.replace(/"/g, ''), // Remove quotes if present
-              description: description.replace(/"/g, ''),
-              category: category.replace(/"/g, ''),
-              type: type.replace(/"/g, ''),
-              amount: parseFloat(amount.replace(/"/g, ''))
-            });
-          }
-        }
+        const transactions = transactionApi.parseCsvToTransactions(text);
+        allTransactions.push(...transactions);
       }
       
       if (allTransactions.length > 0) {
-        onUpload(allTransactions);
+        // Upload to backend
+        await transactionApi.bulkCreateTransactions(allTransactions);
+        
+        // Clear files and close modal
         setUploadedFiles([]);
         onClose();
+        
+        // Refresh transaction list
+        if (onUpload) {
+          onUpload();
+        }
+        
         alert(`Successfully imported ${allTransactions.length} transactions!`);
       } else {
-        alert('No valid transactions found in the CSV file(s).');
+        setError('No valid transactions found in the CSV file(s).');
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error processing CSV files:', error);
-      alert('Error processing CSV files. Please check the file format.');
+      setError(error.message || 'Error processing CSV files. Please check the file format.');
+    } finally {
+      setIsProcessing(false);
     }
   };
 
@@ -153,6 +156,13 @@ const UploadModal: React.FC<UploadModalProps> = ({ isOpen, onClose, onUpload }) 
         {/* CSV Tab */}
         {activeTab === 'csv' && (
           <div className="space-y-4">
+            {error && (
+              <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm flex items-center space-x-2">
+                <AlertCircle className="w-4 h-4" />
+                <span>{error}</span>
+              </div>
+            )}
+
             <div className="flex items-center justify-between">
               <p className="text-sm text-gray-600">
                 Download template, fill with your data, and upload CSV file.
@@ -181,12 +191,21 @@ const UploadModal: React.FC<UploadModalProps> = ({ isOpen, onClose, onUpload }) 
                 onChange={handleFileSelect}
                 className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
                 multiple
+                disabled={isProcessing}
               />
               
               <FileText className="mx-auto h-8 w-8 text-gray-400" />
               <h3 className="mt-2 text-sm font-medium text-gray-900">Upload CSV files</h3>
               <p className="mt-1 text-xs text-gray-500">
                 Drag and drop or click to select CSV, XLSX, XLS files
+              </p>
+            </div>
+
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+              <h4 className="text-sm font-medium text-blue-900 mb-1">CSV Format:</h4>
+              <p className="text-xs text-blue-700">
+                Required columns: title, amount, type, category, date<br />
+                Optional columns: description, paymentmethod, recipient
               </p>
             </div>
           </div>
@@ -255,15 +274,26 @@ const UploadModal: React.FC<UploadModalProps> = ({ isOpen, onClose, onUpload }) 
           <button
             onClick={onClose}
             className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors"
+            disabled={isProcessing}
           >
             Cancel
           </button>
           <button
             onClick={processFiles}
-            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-            disabled={uploadedFiles.length === 0}
+            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center space-x-2"
+            disabled={uploadedFiles.length === 0 || isProcessing}
           >
-            Process Files
+            {isProcessing ? (
+              <>
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                <span>Processing...</span>
+              </>
+            ) : (
+              <>
+                <Upload className="w-4 h-4" />
+                <span>Process Files</span>
+              </>
+            )}
           </button>
         </div>
       </div>

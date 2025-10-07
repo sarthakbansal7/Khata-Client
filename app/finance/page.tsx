@@ -1,5 +1,10 @@
 import Dashboard from '../../components/finance/Dashboard';
+import { FinanceProtectedRoute } from '../authContext/routesProtector';
 
 export default function FinancePage() {
-  return <Dashboard />;
+  return (
+    <FinanceProtectedRoute>
+      <Dashboard />
+    </FinanceProtectedRoute>
+  );
 }

@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Eye, EyeOff, User, Mail, Lock } from 'lucide-react';
+import { useAuth } from '../authContext/routesProtector';
 
 export default function LoginPage() {
   const [isLogin, setIsLogin] = useState(true);
@@ -12,6 +13,10 @@ export default function LoginPage() {
     email: '',
     password: ''
   });
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState('');
+  
+  const { login, register } = useAuth();
   const router = useRouter();
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -20,19 +25,53 @@ export default function LoginPage() {
       ...prev,
       [name]: value
     }));
+    // Clear error when user starts typing
+    if (error) setError('');
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Simple validation - redirect to finance dashboard
-    if (formData.email && formData.password) {
-      router.push('/finance');
+    setIsLoading(true);
+    setError('');
+
+    try {
+      if (isLogin) {
+        // Login
+        if (!formData.email || !formData.password) {
+          setError('Please fill in all fields');
+          return;
+        }
+        await login(formData.email, formData.password);
+      } else {
+        // Register
+        if (!formData.name || !formData.email || !formData.password) {
+          setError('Please fill in all fields');
+          return;
+        }
+        if (formData.password.length < 6) {
+          setError('Password must be at least 6 characters long');
+          return;
+        }
+        await register(formData.name, formData.email, formData.password);
+      }
+      
+      // Check for redirect URL after successful login
+      const redirectUrl = sessionStorage.getItem('redirectAfterLogin');
+      if (redirectUrl) {
+        sessionStorage.removeItem('redirectAfterLogin');
+        router.push(redirectUrl);
+      }
+    } catch (error: any) {
+      setError(error.message || 'Authentication failed. Please try again.');
+    } finally {
+      setIsLoading(false);
     }
   };
 
   const toggleForm = () => {
     setIsLogin(!isLogin);
     setFormData({ name: '', email: '', password: '' });
+    setError('');
   };
 
   return (
@@ -93,6 +132,12 @@ export default function LoginPage() {
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
+          {error && (
+            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">
+              {error}
+            </div>
+          )}
+
           {!isLogin && (
             <div className="relative">
               <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
@@ -104,6 +149,7 @@ export default function LoginPage() {
                 placeholder="Full Name"
                 className="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-black transition-colors"
                 required={!isLogin}
+                disabled={isLoading}
               />
             </div>
           )}
@@ -118,6 +164,7 @@ export default function LoginPage() {
               placeholder="Enter Email / Phone No"
               className="w-full pl-12 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-black transition-colors"
               required
+              disabled={isLoading}
             />
           </div>
 
@@ -131,11 +178,13 @@ export default function LoginPage() {
               placeholder="Password"
               className="w-full pl-12 pr-12 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-black focus:border-black transition-colors"
               required
+              disabled={isLoading}
             />
             <button
               type="button"
               onClick={() => setShowPassword(!showPassword)}
               className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+              disabled={isLoading}
             >
               {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
             </button>
@@ -151,9 +200,17 @@ export default function LoginPage() {
 
           <button
             type="submit"
-            className="w-full bg-black text-white py-3 rounded-lg font-medium hover:bg-gray-800 transition-colors"
+            disabled={isLoading}
+            className="w-full bg-black text-white py-3 rounded-lg font-medium hover:bg-gray-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
           >
-            {isLogin ? 'Sign In' : 'Sign Up'}
+            {isLoading ? (
+              <>
+                <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mr-2"></div>
+                {isLogin ? 'Signing In...' : 'Creating Account...'}
+              </>
+            ) : (
+              isLogin ? 'Sign In' : 'Sign Up'
+            )}
           </button>
         </form>
 

@@ -7,7 +7,8 @@ import {
   BarChart3, 
   FileText, 
   HelpCircle, 
-  Settings
+  Settings,
+  MessageCircle
 } from 'lucide-react';
 
 const Sidebar = () => {
@@ -17,6 +18,7 @@ const Sidebar = () => {
   const menuItems = [
     { icon: BarChart3, label: 'Analytics', href: '/finance', active: pathname === '/finance' },
     { icon: FileText, label: 'Transactions', href: '/finance/manage/transactions', active: pathname === '/finance/manage/transactions' },
+    { icon: MessageCircle, label: 'AI Assistant', href: '/finance/ai-assistant', active: pathname === '/finance/ai-assistant' },
     { icon: Settings, label: 'Settings', href: '/finance/settings', active: pathname === '/finance/settings' },
     { icon: HelpCircle, label: 'Help', href: '/finance/help', active: pathname === '/finance/help' }
   ];
@@ -30,7 +32,7 @@ const Sidebar = () => {
       {/* Logo */}
       <div className="p-4">
         <div className="w-8 h-8 bg-black rounded-lg flex items-center justify-center">
-          <span className="text-white font-bold text-sm">Jn</span>
+          <span className="text-white font-bold text-sm">Khata</span>
         </div>
       </div>
 

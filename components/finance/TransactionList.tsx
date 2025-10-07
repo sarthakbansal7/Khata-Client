@@ -1,37 +1,42 @@
 "use client";
 
 import React, { useState } from 'react';
-import { Search, Filter, Download, ChevronLeft, ChevronRight } from 'lucide-react';
-
-interface Transaction {
-  id: number;
-  date: string;
-  description: string;
-  category: string;
-  type: string;
-  amount: number;
-}
+import { Search, Filter, Download, ChevronLeft, ChevronRight, Edit2, Trash2, MoreVertical } from 'lucide-react';
+import transactionApi, { Transaction } from '@/app/authContext/transactionApi';
 
 interface TransactionListProps {
-  transactions: Transaction[];
+  transactions?: Transaction[]; // Make optional
   dateFilter?: {
     type: 'month' | 'year' | 'range';
     value: string;
     startDate?: string;
     endDate?: string;
   };
+  onTransactionUpdate?: () => void; // Callback to refresh transaction list
+  onEditTransaction?: (transaction: Transaction) => void; // Callback to open edit modal
 }
 
-const TransactionList: React.FC<TransactionListProps> = ({ transactions, dateFilter }) => {
+const TransactionList: React.FC<TransactionListProps> = ({ 
+  transactions = [], // Provide default empty array 
+  dateFilter, 
+  onTransactionUpdate,
+  onEditTransaction 
+}) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterType, setFilterType] = useState('all');
   const [currentPage, setCurrentPage] = useState(1);
+  const [isDeleting, setIsDeleting] = useState<string | null>(null);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState<string | null>(null);
   const itemsPerPage = 10;
 
+  // Ensure transactions is always an array - robust type checking
+  const safeTransactions = Array.isArray(transactions) ? transactions : [];
+
   // Filter transactions
-  const filteredTransactions = transactions.filter(transaction => {
-    const matchesSearch = transaction.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         transaction.category.toLowerCase().includes(searchTerm.toLowerCase());
+  const filteredTransactions = safeTransactions.filter(transaction => {
+    const matchesSearch = (transaction.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         transaction.category?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                         transaction.description?.toLowerCase().includes(searchTerm.toLowerCase())) ?? false;
     const matchesFilter = filterType === 'all' || transaction.type === filterType;
     
     // Date filtering
@@ -56,6 +61,26 @@ const TransactionList: React.FC<TransactionListProps> = ({ transactions, dateFil
     
     return matchesSearch && matchesFilter && matchesDate;
   });
+
+  // Handle delete transaction
+  const handleDeleteTransaction = async (transactionId: string) => {
+    if (!window.confirm('Are you sure you want to delete this transaction?')) {
+      return;
+    }
+
+    setIsDeleting(transactionId);
+    try {
+      await transactionApi.deleteTransaction(transactionId);
+      if (onTransactionUpdate) {
+        onTransactionUpdate();
+      }
+    } catch (error: any) {
+      console.error('Failed to delete transaction:', error);
+      alert('Failed to delete transaction: ' + error.message);
+    } finally {
+      setIsDeleting(null);
+    }
+  };
 
   // Pagination
   const totalPages = Math.ceil(filteredTransactions.length / itemsPerPage);
@@ -106,20 +131,40 @@ const TransactionList: React.FC<TransactionListProps> = ({ transactions, dateFil
           <thead className="bg-gray-50">
             <tr>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Description</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Title</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Category</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
               <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
+              <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
-            {currentTransactions.map((transaction) => (
-              <tr key={transaction.id} className="hover:bg-gray-50">
+            {currentTransactions.length === 0 ? (
+              <tr>
+                <td colSpan={6} className="px-6 py-8 text-center text-gray-500">
+                  <div className="flex flex-col items-center space-y-2">
+                    <div className="text-lg">No transactions found</div>
+                    <div className="text-sm">
+                      {filteredTransactions.length === 0 && transactions.length > 0
+                        ? "Try adjusting your search or filter criteria"
+                        : "Start by adding your first transaction"}
+                    </div>
+                  </div>
+                </td>
+              </tr>
+            ) : (
+              currentTransactions.map((transaction) => (
+                <tr key={transaction._id} className="hover:bg-gray-50">
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                   {new Date(transaction.date).toLocaleDateString()}
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                  {transaction.description}
+                  <div>
+                    <div className="font-medium">{transaction.title}</div>
+                    {transaction.description && (
+                      <div className="text-gray-500 text-xs">{transaction.description}</div>
+                    )}
+                  </div>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                   {transaction.category}
@@ -138,8 +183,34 @@ const TransactionList: React.FC<TransactionListProps> = ({ transactions, dateFil
                     {transaction.type === 'income' ? '+' : '-'}${transaction.amount.toFixed(2)}
                   </span>
                 </td>
+                <td className="px-6 py-4 whitespace-nowrap text-center">
+                  <div className="flex items-center justify-center space-x-2">
+                    {onEditTransaction && (
+                      <button
+                        onClick={() => onEditTransaction(transaction)}
+                        className="text-blue-600 hover:text-blue-800 transition-colors"
+                        title="Edit transaction"
+                      >
+                        <Edit2 className="w-4 h-4" />
+                      </button>
+                    )}
+                    <button
+                      onClick={() => transaction._id && handleDeleteTransaction(transaction._id)}
+                      disabled={isDeleting === transaction._id}
+                      className="text-red-600 hover:text-red-800 transition-colors disabled:opacity-50"
+                      title="Delete transaction"
+                    >
+                      {isDeleting === transaction._id ? (
+                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-red-600"></div>
+                      ) : (
+                        <Trash2 className="w-4 h-4" />
+                      )}
+                    </button>
+                  </div>
+                </td>
               </tr>
-            ))}
+              ))
+            )}
           </tbody>
         </table>
       </div>

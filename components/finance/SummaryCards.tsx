@@ -1,22 +1,40 @@
 "use client";
 
 import React from 'react';
-import { summaryData } from '../../lib/mockData';
 import { DollarSign, FileText, CreditCard, MoreHorizontal } from 'lucide-react';
+import { Transaction } from '../../app/authContext/transactionApi';
 
-const SummaryCards = () => {
+interface SummaryCardsProps {
+  transactions: Transaction[];
+  isLoading: boolean;
+}
+
+const SummaryCards = ({ transactions, isLoading }: SummaryCardsProps) => {
+  // Calculate values from real transaction data
+  const totalIncome = transactions
+    .filter(t => t.type === 'income')
+    .reduce((sum, t) => sum + t.amount, 0);
+  
+  const totalExpenses = transactions
+    .filter(t => t.type === 'expense')
+    .reduce((sum, t) => sum + t.amount, 0);
+  
+  const recentBalance = totalIncome - totalExpenses;
+  const transactionCount = transactions.length;
+  const totalSpending = totalExpenses;
+
   const cards = [
     {
       title: 'Recent account balance',
-      value: summaryData.recentBalance,
+      value: recentBalance,
       icon: DollarSign,
       format: 'currency',
       bgColor: 'bg-blue-50',
       iconColor: 'text-blue-600'
     },
     {
-      title: 'Number of your transaction',
-      value: summaryData.transactionCount,
+      title: 'Total Transactions',
+      value: transactionCount,
       icon: FileText,
       format: 'number',
       bgColor: 'bg-green-50',
@@ -24,7 +42,7 @@ const SummaryCards = () => {
     },
     {
       title: 'Your total spending',
-      value: summaryData.totalSpending,
+      value: totalSpending,
       icon: CreditCard,
       format: 'currency',
       bgColor: 'bg-purple-50',
@@ -34,10 +52,32 @@ const SummaryCards = () => {
 
   const formatValue = (value: number, format: string) => {
     if (format === 'currency') {
-      return `$${(value / 1000).toFixed(0)},000`;
+      return `₹${value.toLocaleString('en-IN')}`;
     }
     return value.toString();
   };
+
+  if (isLoading) {
+    return (
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+        {[1, 2, 3].map((i) => (
+          <div
+            key={i}
+            className="bg-white rounded-lg shadow-sm border border-gray-100 p-4 animate-pulse"
+          >
+            <div className="flex items-center justify-between mb-3">
+              <div className="w-10 h-10 bg-gray-200 rounded-lg"></div>
+              <div className="w-4 h-4 bg-gray-200 rounded"></div>
+            </div>
+            <div className="space-y-2">
+              <div className="h-6 bg-gray-200 rounded w-20"></div>
+              <div className="h-3 bg-gray-200 rounded w-32"></div>
+            </div>
+          </div>
+        ))}
+      </div>
+    );
+  }
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">

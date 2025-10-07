@@ -1,17 +1,22 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Sidebar from '../../../../components/finance/Sidebar';
 import Navbar from '../../../../components/finance/Navbar';
 import TransactionList from '../../../../components/finance/TransactionList';
 import AddTransactionModal from '../../../../components/finance/AddTransactionModal';
 import UploadModal from '../../../../components/finance/UploadModal';
+import transactionApi, { Transaction } from '../../../../app/authContext/transactionApi';
+import { useAuth } from '../../../../app/authContext/routesProtector';
 import { Plus, Upload, Calendar, ChevronDown } from 'lucide-react';
 
 export default function TransactionListPage() {
+  const { user, isAuthenticated } = useAuth();
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
-  const [transactions, setTransactions] = useState<any[]>([]);
+  const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState('');
   const [dateFilter, setDateFilter] = useState({
     type: 'all' as 'all' | 'month' | 'year' | 'range',
     value: '',
@@ -20,17 +25,75 @@ export default function TransactionListPage() {
   });
   const [showDatePicker, setShowDatePicker] = useState(false);
 
-  const handleAddTransaction = (newTransaction: any) => {
-    const transaction = {
-      id: Date.now(), // Use timestamp as unique ID
-      ...newTransaction,
-      amount: parseFloat(newTransaction.amount)
-    };
-    setTransactions(prev => [transaction, ...prev]);
+  // Load transactions from backend
+  const loadTransactions = async () => {
+    try {
+      setIsLoading(true);
+      setError('');
+      
+      // Check if user is authenticated
+      if (!isAuthenticated) {
+        console.log('User not authenticated, skipping transaction load');
+        setTransactions([]);
+        return;
+      }
+
+      console.log('Loading transactions for user:', user);
+      const response = await transactionApi.getTransactions();
+      console.log('API Response:', response);
+      
+      if (response.success && response.data) {
+        // Handle the paginated structure from backend
+        const transactionsData = response.data.transactions || [];
+        console.log('Setting transactions:', transactionsData);
+        setTransactions(transactionsData);
+      } else {
+        console.log('No data in response or unsuccessful');
+        // If no data or unsuccessful, set empty array
+        setTransactions([]);
+        if (!response.success) {
+          setError(response.message || 'Failed to load transactions');
+        }
+      }
+    } catch (error: any) {
+      console.error('Failed to load transactions:', error);
+      setError(error.message || 'Failed to load transactions');
+      // Set empty array on error
+      setTransactions([]);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
-  const handleFileUpload = (uploadedTransactions: any[]) => {
-    setTransactions(prev => [...uploadedTransactions, ...prev]);
+  // Load transactions on component mount and when authentication changes
+  useEffect(() => {
+    if (isAuthenticated && user) {
+      loadTransactions();
+    }
+  }, [isAuthenticated, user]);
+
+  // Test backend connectivity
+  useEffect(() => {
+    const testBackend = async () => {
+      try {
+        const response = await fetch('http://localhost:5000/api/health');
+        const result = await response.json();
+        console.log('Backend health check:', result);
+      } catch (error) {
+        console.error('Backend not reachable:', error);
+      }
+    };
+    testBackend();
+  }, []);
+
+  const handleAddTransaction = () => {
+    // Refresh transaction list after adding
+    loadTransactions();
+  };
+
+  const handleFileUpload = () => {
+    // Refresh transaction list after successful upload
+    loadTransactions();
   };
 
   const handleDateFilterChange = (type: string, value: string, startDate?: string, endDate?: string) => {
@@ -65,7 +128,12 @@ export default function TransactionListPage() {
             <div className="flex items-center justify-between mb-6">
               <div>
                 <h1 className="text-2xl font-bold text-gray-900">Transactions</h1>
-                <p className="text-gray-600">Manage all your financial transactions</p>
+                <p className="text-gray-600">
+                  {user ? `Welcome ${user.name} - Manage your financial transactions` : 'Manage all your financial transactions'}
+                </p>
+                {!isAuthenticated && (
+                  <p className="text-red-600 text-sm">Please log in to view your transactions</p>
+                )}
               </div>
               <div className="flex items-center space-x-3">
                 {/* Date Filter Dropdown */}
@@ -189,15 +257,29 @@ export default function TransactionListPage() {
                 </button>
               </div>
             </div>
-            <TransactionList 
-              transactions={transactions} 
-              dateFilter={dateFilter.type !== 'all' ? {
-                type: dateFilter.type as 'month' | 'year' | 'range',
-                value: dateFilter.value,
-                startDate: dateFilter.startDate,
-                endDate: dateFilter.endDate
-              } : undefined}
-            />
+            {error && (
+              <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-4">
+                {error}
+              </div>
+            )}
+            
+            {isLoading ? (
+              <div className="flex items-center justify-center py-12">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                <span className="ml-2 text-gray-600">Loading transactions...</span>
+              </div>
+            ) : (
+              <TransactionList 
+                transactions={transactions} 
+                dateFilter={dateFilter.type !== 'all' ? {
+                  type: dateFilter.type as 'month' | 'year' | 'range',
+                  value: dateFilter.value,
+                  startDate: dateFilter.startDate,
+                  endDate: dateFilter.endDate
+                } : undefined}
+                onTransactionUpdate={loadTransactions}
+              />
+            )}
           </div>
         </div>
       </div>
