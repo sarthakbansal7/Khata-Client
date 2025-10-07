@@ -23,10 +23,15 @@ export const getApiUrl = (endpoint: string): string => {
 
 // Helper function to get auth headers
 export const getAuthHeaders = () => {
-  const token = localStorage.getItem('token');
+  // localStorage is not available during SSR — guard access
+  let token: string | null = null;
+  if (typeof window !== 'undefined' && window.localStorage) {
+    token = window.localStorage.getItem('token');
+  }
+
   return {
     'Content-Type': 'application/json',
-    ...(token && { Authorization: `Bearer ${token}` }),
+    ...(token ? { Authorization: `Bearer ${token}` } : {}),
   };
 };
 
