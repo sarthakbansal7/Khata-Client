@@ -8,6 +8,8 @@ import EarningReport from '../../components/finance/EarningReport';
 import TransactionHistory from '../../components/finance/TransactionHistory';
 import LiveCalendar from '../../components/finance/LiveCalendar';
 import LastMonthTransactions from '../../components/finance/LastMonthTransactions';
+import ExpensePieChart from '../../components/finance/ExpensePieChart';
+import MonthlyExpensesChart from '../../components/finance/MonthlyExpensesChart';
 import transactionApi, { Transaction } from '../../app/authContext/transactionApi';
 import authApi, { User } from '../../app/authContext/authApi';
 
@@ -89,6 +91,7 @@ const Dashboard = () => {
               {/* Left Column */}
               <div className="lg:col-span-2 space-y-4">
                 <EarningReport transactions={transactions} isLoading={isLoading} />
+                <MonthlyExpensesChart transactions={transactions} isLoading={isLoading} />
                 <TransactionHistory transactions={transactions} isLoading={isLoading} />
               </div>
               
@@ -96,6 +99,7 @@ const Dashboard = () => {
               <div className="space-y-4">
                 <LiveCalendar />
                 <LastMonthTransactions transactions={transactions} isLoading={isLoading} />
+                <ExpensePieChart transactions={transactions} isLoading={isLoading} />
               </div>
             </div>
           </div>

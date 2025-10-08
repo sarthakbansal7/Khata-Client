@@ -17,6 +17,12 @@ export default function TransactionListPage() {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
+  const [pagination, setPagination] = useState({
+    currentPage: 1,
+    totalPages: 1,
+    totalTransactions: 0,
+    limit: 10
+  });
   const [dateFilter, setDateFilter] = useState({
     type: 'all' as 'all' | 'month' | 'year' | 'range',
     value: '',
@@ -25,8 +31,8 @@ export default function TransactionListPage() {
   });
   const [showDatePicker, setShowDatePicker] = useState(false);
 
-  // Load transactions from backend
-  const loadTransactions = async () => {
+  // Load transactions from backend with pagination
+  const loadTransactions = async (page: number = 1, resetData: boolean = true) => {
     try {
       setIsLoading(true);
       setError('');
@@ -35,22 +41,54 @@ export default function TransactionListPage() {
       if (!isAuthenticated) {
         console.log('User not authenticated, skipping transaction load');
         setTransactions([]);
+        setPagination({ currentPage: 1, totalPages: 1, totalTransactions: 0, limit: 10 });
         return;
       }
 
-      console.log('Loading transactions for user:', user);
-      const response = await transactionApi.getTransactions();
+      // Build filter parameters - fetch ALL transactions, no server-side pagination
+      const filters: any = {
+        limit: 1000 // Get a large number to fetch all transactions
+      };
+
+      // Add date filters if any
+      if (dateFilter.type === 'month' && dateFilter.value) {
+        const [year, month] = dateFilter.value.split('-');
+        filters.year = year;
+        filters.month = month;
+      } else if (dateFilter.type === 'year' && dateFilter.value) {
+        filters.year = dateFilter.value;
+      } else if (dateFilter.type === 'range' && dateFilter.startDate && dateFilter.endDate) {
+        filters.startDate = dateFilter.startDate;
+        filters.endDate = dateFilter.endDate;
+      }
+
+      console.log('Loading transactions for user:', user, 'Page:', page, 'Filters:', filters);
+      const response = await transactionApi.getTransactions(filters);
       console.log('API Response:', response);
       
       if (response.success && response.data) {
         // Handle the paginated structure from backend
         const transactionsData = response.data.transactions || [];
+        const paginationData = response.data.pagination || { currentPage: 1, totalPages: 1, totalTransactions: 0, limit: 10 };
+        
         console.log('Setting transactions:', transactionsData);
+        console.log('Pagination info:', paginationData);
+        
+        // Always reset data since we're fetching all transactions
         setTransactions(transactionsData);
+        // Set pagination to show we have all data loaded
+        setPagination({
+          currentPage: 1,
+          totalPages: Math.ceil(transactionsData.length / 10),
+          totalTransactions: transactionsData.length,
+          limit: 10
+        });
       } else {
         console.log('No data in response or unsuccessful');
-        // If no data or unsuccessful, set empty array
-        setTransactions([]);
+        if (resetData) {
+          setTransactions([]);
+          setPagination({ currentPage: 1, totalPages: 1, totalTransactions: 0, limit: 10 });
+        }
         if (!response.success) {
           setError(response.message || 'Failed to load transactions');
         }
@@ -58,8 +96,10 @@ export default function TransactionListPage() {
     } catch (error: any) {
       console.error('Failed to load transactions:', error);
       setError(error.message || 'Failed to load transactions');
-      // Set empty array on error
-      setTransactions([]);
+      if (resetData) {
+        setTransactions([]);
+        setPagination({ currentPage: 1, totalPages: 1, totalTransactions: 0, limit: 10 });
+      }
     } finally {
       setIsLoading(false);
     }
@@ -68,9 +108,16 @@ export default function TransactionListPage() {
   // Load transactions on component mount and when authentication changes
   useEffect(() => {
     if (isAuthenticated && user) {
-      loadTransactions();
+      loadTransactions(1, true);
     }
   }, [isAuthenticated, user]);
+
+  // Reload when date filter changes
+  useEffect(() => {
+    if (isAuthenticated && user) {
+      loadTransactions(1, true);
+    }
+  }, [dateFilter]);
 
   // Test backend connectivity
   useEffect(() => {
@@ -88,12 +135,18 @@ export default function TransactionListPage() {
 
   const handleAddTransaction = () => {
     // Refresh transaction list after adding
-    loadTransactions();
+    loadTransactions(1, true);
   };
 
   const handleFileUpload = () => {
     // Refresh transaction list after successful upload
-    loadTransactions();
+    loadTransactions(1, true);
+  };
+
+  const handlePageChange = (newPage: number) => {
+    if (newPage >= 1 && newPage <= pagination.totalPages) {
+      loadTransactions(newPage, true);
+    }
   };
 
   const handleDateFilterChange = (type: string, value: string, startDate?: string, endDate?: string) => {
@@ -269,16 +322,19 @@ export default function TransactionListPage() {
                 <span className="ml-2 text-gray-600">Loading transactions...</span>
               </div>
             ) : (
-              <TransactionList 
-                transactions={transactions} 
-                dateFilter={dateFilter.type !== 'all' ? {
-                  type: dateFilter.type as 'month' | 'year' | 'range',
-                  value: dateFilter.value,
-                  startDate: dateFilter.startDate,
-                  endDate: dateFilter.endDate
-                } : undefined}
-                onTransactionUpdate={loadTransactions}
-              />
+              <div>
+                <TransactionList 
+                  transactions={transactions} 
+                  dateFilter={dateFilter.type !== 'all' ? {
+                    type: dateFilter.type as 'month' | 'year' | 'range',
+                    value: dateFilter.value,
+                    startDate: dateFilter.startDate,
+                    endDate: dateFilter.endDate
+                  } : undefined}
+                  onTransactionUpdate={() => loadTransactions(1, true)}
+                  serverSidePagination={false}
+                />
+              </div>
             )}
           </div>
         </div>

@@ -1,7 +1,7 @@
 "use client";
 
-import React from 'react';
-import { RotateCcw, ArrowUpDown } from 'lucide-react';
+import React, { useState } from 'react';
+import { RotateCcw, ArrowUpDown, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Transaction } from '../../app/authContext/transactionApi';
 
 interface TransactionHistoryProps {
@@ -10,6 +10,15 @@ interface TransactionHistoryProps {
 }
 
 const TransactionHistory = ({ transactions, isLoading }: TransactionHistoryProps) => {
+  const [currentPage, setCurrentPage] = useState(1);
+  const transactionsPerPage = 8; // Show 8 transactions per page for better balance
+  
+  // Calculate pagination
+  const totalPages = Math.ceil(transactions.length / transactionsPerPage);
+  const startIndex = (currentPage - 1) * transactionsPerPage;
+  const endIndex = startIndex + transactionsPerPage;
+  const currentTransactions = transactions.slice(startIndex, endIndex);
+  
   const getStatusBadge = (type: string) => {
     const baseClasses = "px-2 py-1 rounded-full text-xs font-medium";
     switch (type.toLowerCase()) {
@@ -108,7 +117,7 @@ const TransactionHistory = ({ transactions, isLoading }: TransactionHistoryProps
                 </td>
               </tr>
             ) : (
-              transactions.slice(0, 5).map((transaction) => (
+              currentTransactions.map((transaction) => (
                 <tr key={transaction._id || Math.random()} className="border-b border-gray-50 hover:bg-gray-50 transition-colors">
                   <td className="py-4 px-4 text-sm text-gray-900 font-medium">
                     {transaction._id ? transaction._id.slice(-6).toUpperCase() : 'N/A'}
@@ -133,6 +142,34 @@ const TransactionHistory = ({ transactions, isLoading }: TransactionHistoryProps
           </tbody>
         </table>
       </div>
+      
+      {/* Pagination */}
+      {transactions.length > transactionsPerPage && (
+        <div className="flex items-center justify-between mt-4 pt-4 border-t border-gray-100">
+          <div className="text-sm text-gray-500">
+            Showing {startIndex + 1}-{Math.min(endIndex, transactions.length)} of {transactions.length} transactions
+          </div>
+          <div className="flex items-center space-x-2">
+            <button
+              onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+              disabled={currentPage === 1}
+              className="p-2 rounded-lg border border-gray-300 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <ChevronLeft className="w-4 h-4" />
+            </button>
+            <span className="px-3 py-1 text-sm font-medium">
+              Page {currentPage} of {totalPages}
+            </span>
+            <button
+              onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+              disabled={currentPage === totalPages}
+              className="p-2 rounded-lg border border-gray-300 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <ChevronRight className="w-4 h-4" />
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

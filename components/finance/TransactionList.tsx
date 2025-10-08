@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { Search, Filter, Download, ChevronLeft, ChevronRight, Edit2, Trash2, MoreVertical } from 'lucide-react';
 import transactionApi, { Transaction } from '@/app/authContext/transactionApi';
+import ExportModal from './ExportModal';
 
 interface TransactionListProps {
   transactions?: Transaction[]; // Make optional
@@ -14,52 +15,44 @@ interface TransactionListProps {
   };
   onTransactionUpdate?: () => void; // Callback to refresh transaction list
   onEditTransaction?: (transaction: Transaction) => void; // Callback to open edit modal
+  serverSidePagination?: boolean; // Enable server-side pagination
+  paginationInfo?: {
+    currentPage: number;
+    totalPages: number;
+    totalTransactions: number;
+    limit: number;
+  };
+  onPageChange?: (newPage: number) => void; // Callback for page changes
 }
 
 const TransactionList: React.FC<TransactionListProps> = ({ 
   transactions = [], // Provide default empty array 
   dateFilter, 
   onTransactionUpdate,
-  onEditTransaction 
+  onEditTransaction,
+  serverSidePagination = false,
+  paginationInfo,
+  onPageChange
 }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterType, setFilterType] = useState('all');
   const [currentPage, setCurrentPage] = useState(1);
   const [isDeleting, setIsDeleting] = useState<string | null>(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState<string | null>(null);
+  const [showExportModal, setShowExportModal] = useState(false);
   const itemsPerPage = 10;
 
   // Ensure transactions is always an array - robust type checking
   const safeTransactions = Array.isArray(transactions) ? transactions : [];
 
-  // Filter transactions
+  // Filter transactions - always apply client-side search and type filtering
   const filteredTransactions = safeTransactions.filter(transaction => {
     const matchesSearch = (transaction.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          transaction.category?.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          transaction.description?.toLowerCase().includes(searchTerm.toLowerCase())) ?? false;
     const matchesFilter = filterType === 'all' || transaction.type === filterType;
     
-    // Date filtering
-    let matchesDate = true;
-    if (dateFilter) {
-      const transactionDate = new Date(transaction.date);
-      
-      if (dateFilter.type === 'month') {
-        const [year, month] = dateFilter.value.split('-');
-        const transactionYear = transactionDate.getFullYear().toString();
-        const transactionMonth = (transactionDate.getMonth() + 1).toString().padStart(2, '0');
-        matchesDate = transactionYear === year && transactionMonth === month;
-      } else if (dateFilter.type === 'year') {
-        const transactionYear = transactionDate.getFullYear().toString();
-        matchesDate = transactionYear === dateFilter.value;
-      } else if (dateFilter.type === 'range' && dateFilter.startDate && dateFilter.endDate) {
-        const startDate = new Date(dateFilter.startDate);
-        const endDate = new Date(dateFilter.endDate);
-        matchesDate = transactionDate >= startDate && transactionDate <= endDate;
-      }
-    }
-    
-    return matchesSearch && matchesFilter && matchesDate;
+    return matchesSearch && matchesFilter;
   });
 
   // Handle delete transaction
@@ -82,11 +75,55 @@ const TransactionList: React.FC<TransactionListProps> = ({
     }
   };
 
-  // Pagination
-  const totalPages = Math.ceil(filteredTransactions.length / itemsPerPage);
-  const startIndex = (currentPage - 1) * itemsPerPage;
-  const endIndex = startIndex + itemsPerPage;
-  const currentTransactions = filteredTransactions.slice(startIndex, endIndex);
+  // Pagination logic - use server-side or client-side
+  let totalPages: number;
+  let currentTransactions: Transaction[];
+  let displayPage: number;
+  let totalCount: number;
+
+  if (serverSidePagination && paginationInfo) {
+    // Server-side pagination
+    totalPages = paginationInfo.totalPages;
+    displayPage = paginationInfo.currentPage;
+    totalCount = paginationInfo.totalTransactions;
+    // Use transactions as-is (already paginated by server)
+    currentTransactions = filteredTransactions;
+  } else {
+    // Client-side pagination (original behavior)
+    totalPages = Math.ceil(filteredTransactions.length / itemsPerPage);
+    displayPage = currentPage;
+    totalCount = filteredTransactions.length;
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    currentTransactions = filteredTransactions.slice(startIndex, endIndex);
+  }
+
+  // Generate filter description for export
+  const getFilterDescription = (): string => {
+    const filters: string[] = [];
+    
+    if (searchTerm) {
+      filters.push(`Search: "${searchTerm}"`);
+    }
+    
+    if (filterType !== 'all') {
+      filters.push(`Type: ${filterType}`);
+    }
+    
+    if (dateFilter) {
+      if (dateFilter.type === 'month') {
+        const [year, month] = dateFilter.value.split('-');
+        const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+        filters.push(`Month: ${monthNames[parseInt(month) - 1]} ${year}`);
+      } else if (dateFilter.type === 'year') {
+        filters.push(`Year: ${dateFilter.value}`);
+      } else if (dateFilter.type === 'range') {
+        filters.push(`Date Range: ${dateFilter.startDate} to ${dateFilter.endDate}`);
+      }
+    }
+    
+    return filters.length > 0 ? filters.join(', ') : 'No filters applied';
+  };
 
   return (
     <div className="bg-white rounded-lg shadow-sm border border-gray-100">
@@ -117,7 +154,10 @@ const TransactionList: React.FC<TransactionListProps> = ({
               <option value="expense">Expense</option>
             </select>
             
-            <button className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center space-x-2">
+            <button 
+              onClick={() => setShowExportModal(true)}
+              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center space-x-2"
+            >
               <Download className="w-4 h-4" />
               <span>Export</span>
             </button>
@@ -218,31 +258,55 @@ const TransactionList: React.FC<TransactionListProps> = ({
       {/* Pagination */}
       <div className="px-6 py-4 border-t border-gray-200 flex items-center justify-between">
         <div className="text-sm text-gray-500">
-          Showing {startIndex + 1} to {Math.min(endIndex, filteredTransactions.length)} of {filteredTransactions.length} results
+          {serverSidePagination && paginationInfo ? (
+            `Showing ${((paginationInfo.currentPage - 1) * paginationInfo.limit) + 1} to ${Math.min(paginationInfo.currentPage * paginationInfo.limit, paginationInfo.totalTransactions)} of ${paginationInfo.totalTransactions} results`
+          ) : (
+            `Showing ${((displayPage - 1) * itemsPerPage) + 1} to ${Math.min(displayPage * itemsPerPage, totalCount)} of ${totalCount} results`
+          )}
         </div>
         
         <div className="flex items-center space-x-2">
           <button
-            onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
-            disabled={currentPage === 1}
+            onClick={() => {
+              if (serverSidePagination && onPageChange) {
+                onPageChange(Math.max(1, displayPage - 1));
+              } else {
+                setCurrentPage(Math.max(1, currentPage - 1));
+              }
+            }}
+            disabled={displayPage === 1}
             className="p-2 border border-gray-300 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
           >
             <ChevronLeft className="w-4 h-4" />
           </button>
           
           <span className="px-3 py-2 text-sm text-gray-700">
-            Page {currentPage} of {totalPages}
+            Page {displayPage} of {totalPages}
           </span>
           
           <button
-            onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
-            disabled={currentPage === totalPages}
+            onClick={() => {
+              if (serverSidePagination && onPageChange) {
+                onPageChange(Math.min(totalPages, displayPage + 1));
+              } else {
+                setCurrentPage(Math.min(totalPages, currentPage + 1));
+              }
+            }}
+            disabled={displayPage === totalPages}
             className="p-2 border border-gray-300 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
           >
             <ChevronRight className="w-4 h-4" />
           </button>
         </div>
       </div>
+
+      {/* Export Modal */}
+      <ExportModal
+        isOpen={showExportModal}
+        onClose={() => setShowExportModal(false)}
+        transactions={filteredTransactions} // Export filtered data
+        filterInfo={getFilterDescription()}
+      />
     </div>
   );
 };
